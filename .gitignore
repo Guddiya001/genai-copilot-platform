@@ -1,0 +1,98 @@
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ===============================
+# Node Runtime
+# ===============================
+node_modules/
+.npm
+npm-debug.log*
+.node_modules.lock
+apps/api/.env
+
+
+# ===============================
+# ML / AI Artifacts
+# ===============================
+*.h5
+*.pkl
+*.joblib
+*.onnx
+*.pt
+*.ckpt
+
+# ===============================
+# LLM / RAG / Vector Stores
+# ===============================
+data/
+datasets/
+raw_data/
+processed_data/
+vectorstore/
+faiss_index/
+chroma_db/
+weaviate/
+milvus/
+pinecone/
+qdrant/
+*.db
+*.sqlite
+
+# ===============================
+# Logs / Traces
+# ===============================
+logs/
+*.log
+trace/
+langsmith/
+
+# ===============================
+# Secrets / Credentials (CRITICAL)
+# ===============================
+.env.*
+*.pem
+*.key
+*.crt
+secrets/
+credentials.json
+service_account.json
+azure_openai_key.txt
+openai_key.txt
+
+# ===============================
+# Model Downloads / Caches
+# ===============================
+models/
+checkpoints/
+.cache/
+huggingface/
+hf_cache/
+transformers_cache/
+
+# ===============================
+# Docker / Infra
+# ===============================
+*.tar
+docker-compose.override.yml
+
+# ===============================
+# Build / Temp
+# ===============================
+dist/
+build/
+out/
+tmp/
+temp/
+
+# ===============================
+# Evaluation Outputs
+# ===============================
+eval_results/
+benchmarks/
+reports/

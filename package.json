@@ -1,0 +1,15 @@
+{
+  "name": "genai-copilot-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise GenAI Copilot Platform - Monorepo",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build:api": "npm run build --workspace=apps/api",
+    "start:api": "npm run start --workspace=apps/api"
+  }
+}
