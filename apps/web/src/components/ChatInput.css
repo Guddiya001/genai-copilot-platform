@@ -70,3 +70,31 @@
   width: 20px;
   height: 20px;
 }
+
+.stop-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 24px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: background-color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.stop-button:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+.stop-button:active {
+  transform: scale(0.95);
+}
+
+.stop-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

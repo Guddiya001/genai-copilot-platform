@@ -3,10 +3,11 @@ import './ChatInput.css'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
-  disabled?: boolean
+  isStreaming?: boolean
+  stopStreaming: () => void
 }
 
-function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
+function ChatInput({ onSendMessage, isStreaming = false,  stopStreaming }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -20,7 +21,7 @@ function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (input.trim() && !disabled) {
+    if (input.trim() && !isStreaming) {
       onSendMessage(input)
       setInput('')
       if (textareaRef.current) {
@@ -45,13 +46,14 @@ function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message... (Shift+Enter for new line)"
-          disabled={disabled}
+          disabled={isStreaming}
           rows={1}
           className="input-field"
         />
+        {!isStreaming && (
         <button
           type="submit"
-          disabled={disabled || !input.trim()}
+          disabled={isStreaming || !input.trim()}
           className="send-button"
           title="Send message"
         >
@@ -69,6 +71,12 @@ function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
+        )}
+          {isStreaming && (
+                <button onClick={stopStreaming} className="stop-button">
+                Stop
+               </button>
+            )}
       </div>
     </form>
   )

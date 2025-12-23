@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
+import { useChatStream } from "./hooks/useChatStream";
 import './App.css'
 
 interface Message {
@@ -11,14 +12,17 @@ interface Message {
 }
 
 function App() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: 'Hello! 👋 I\'m your AI assistant. How can I help you today?',
-            sender: 'bot',
-            timestamp: new Date(),
-        },
-    ])
+    // let [messages, setMessages] = useState<Message[]>([
+    //     {
+    //         id: '1',
+    //         text: 'Hello! 👋 I\'m your AI assistant. How can I help you today?',
+    //         sender: 'bot',
+    //         timestamp: new Date(),
+    //     },
+    // ])
+
+  const { messages, sendMessage, isStreaming, stopStreaming } = useChatStream();
+
     const [isLoading, setIsLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -29,7 +33,7 @@ function App() {
     useEffect(() => {
         scrollToBottom()
     }, [messages])
-
+/*
     const handleSendMessage = async (text: string) => {
         if (!text.trim()) return
 
@@ -41,7 +45,7 @@ function App() {
             timestamp: new Date(),
         }
 
-        setMessages((prev) => [...prev, userMessage])
+       // setMessages((prev) => [...prev, userMessage])
         setIsLoading(true)
 
         try {
@@ -52,16 +56,13 @@ function App() {
             // headers: {
             //   'Content-Type': 'application/json',
             // },
-            
+
             // Call the API
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // body: JSON.stringify({
-                //   message: text,
-                // }),
 
                 body: JSON.stringify({
                     "messages": [
@@ -76,9 +77,6 @@ function App() {
                 throw new Error('Failed to get response from server')
             }
 
-            const data = await response.json()
-        // {"success":true,"reply":"Hello! How can I assist you today?"}
-            console.log('API response status:', data);
             // Add bot response
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -103,7 +101,7 @@ function App() {
             setIsLoading(false)
         }
     }
-
+*/
     return (
         <div className="app">
             <div className="chat-container">
@@ -114,9 +112,10 @@ function App() {
 
                 <div className="chat-messages">
                     {messages.map((message) => (
-                        <ChatMessage key={message.id} message={message} />
+                       console.log(message),
+                       <ChatMessage key={message.id} message={message} />
                     ))}
-                    {isLoading && (
+                          {isLoading && (
                         <div className="message bot-message">
                             <div className="message-content">
                                 <div className="typing-indicator">
@@ -130,10 +129,18 @@ function App() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+                <ChatInput onSendMessage={sendMessage}  isStreaming={isStreaming} stopStreaming={stopStreaming} />
+                
+            {isStreaming && (
+                <button onClick={stopStreaming} style={{ marginLeft: 8 }}>
+                Stop
+                </button>
+            )}
             </div>
         </div>
     )
 }
 
 export default App
+
+

@@ -2,8 +2,8 @@ import './ChatMessage.css'
 
 interface Message {
   id: string
-  text: string
-  sender: 'user' | 'bot'
+  content: string
+  role: "user" | "assistant";
   timestamp: Date
 }
 
@@ -17,9 +17,9 @@ function ChatMessage({ message }: ChatMessageProps) {
   }
 
   return (
-    <div className={`message ${message.sender}-message`}>
+    <div className={`message ${message.role}-message`}>
       <div className="message-content">
-        {message.text}
+        { message.content}
       </div>
       <span className="message-time">{formatTime(message.timestamp)}</span>
     </div>

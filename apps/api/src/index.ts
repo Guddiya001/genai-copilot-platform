@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import healthRouter from "./routes/health";
 import chatRouter from "./routes/chat";
+import chatStreamRouter from "./routes/chatStream";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/", healthRouter);
 app.use("/api", chatRouter);
+app.use("/api", chatStreamRouter);
 
 // 404 fallback
 app.use((req, res) => {
