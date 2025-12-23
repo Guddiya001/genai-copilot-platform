@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { chatRequestSchema } from "../types/chat";
 import { chatWithLLM } from "../services/llmClient";
+import { buildChatMessages } from "../services/promptEngine";
 
 const router = Router();
 
@@ -21,7 +22,12 @@ router.post("/chat", async (req: Request, res: Response) => {
 
     const { messages } = parseResult.data;
 
-    const response = await chatWithLLM(messages);
+    const finalMessages = buildChatMessages(messages, {
+      promptKey: "chat:v1"
+    });
+
+
+    const response = await chatWithLLM(finalMessages);
 
     return res.status(200).json({
       success: true,
