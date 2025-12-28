@@ -7,7 +7,7 @@ import healthRouter from "./routes/health";
 import chatRouter from "./routes/chat";
 import chatStreamRouter from "./routes/chatStream";
 import embeddingRouter from "./routes/embeddings";
-
+import ingestRouter from "./routes/ingest";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -21,6 +21,7 @@ app.use("/", healthRouter);
 app.use("/api", chatRouter);
 app.use("/api", chatStreamRouter);
 app.use("/api", embeddingRouter);
+app.use("/api", ingestRouter);
 
 // 404 fallback
 app.use((req, res) => {
