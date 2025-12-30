@@ -3,10 +3,14 @@ import { vectorStore } from "../vectorstore/inMemoryVectorStore";
 import { buildContext } from "./contextBuilder";
 import { buildRagPrompt } from "./ragPrompt";
 import { chatWithLLM } from "../services/llmClient";
+import { checkHallucination } from "../eval/hallucinationCheck";
+
+
 
 interface RagAnswer {
   answer: string;
   sources: string[];
+  evaluation?: { hallucinated: boolean; score: number };
 }
 
 export async function answerWithRag(
@@ -24,7 +28,8 @@ export async function answerWithRag(
   if (!context) {
     return {
       answer: "I don't know",
-      sources: []
+      sources: [],
+      evaluation: {  hallucinated: false, score: 1 }
     };
   }
 
@@ -37,6 +42,9 @@ export async function answerWithRag(
     { role: "user", content: user }
   ]);
 
+
+  // 5a. Evaluate hallucination
+  const evaluation = checkHallucination(response.content, context);
   // 6. Collect sources
   const sources = results
     .map(r => r.metadata?.source || r.metadata?.documentId)
@@ -44,6 +52,7 @@ export async function answerWithRag(
 
   return {
     answer: response.content,
-    sources
+    sources,
+    evaluation
   };
 }
