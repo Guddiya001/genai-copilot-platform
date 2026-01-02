@@ -11,6 +11,7 @@ import ingestRouter from "./routes/ingest";
 import ragRouter from "./routes/rag";
 import ragEvalRouter from "./routes/ragEval";
 import agentRouter from "./routes/agent";
+import memoryRouter from "./routes/memory";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -28,6 +29,7 @@ app.use("/api", ingestRouter);
 app.use("/api", ragRouter);
 app.use("/api", ragEvalRouter);
 app.use("/api", agentRouter);
+app.use("/api", memoryRouter);
 
 
 // 404 fallback
