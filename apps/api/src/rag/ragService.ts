@@ -5,7 +5,7 @@ import { buildRagPrompt } from "./ragPrompt";
 import { chatWithLLM } from "../services/llmClient";
 import { checkHallucination } from "../eval/hallucinationCheck";
 import { recallMemory, saveMemory } from "../memory/memoryService";
-
+import { validateOutput } from "../security/outputGuard";
 
 
 interface RagAnswer {
@@ -17,54 +17,124 @@ interface RagAnswer {
 export async function answerWithRag(
   question: string
 ): Promise<RagAnswer> {
-  // 1. Embed query
+
+  const userId = "demo-user"; // later from auth
+
+  /* -----------------------------
+     1. Embed query
+  ------------------------------ */
   const queryEmbedding = await createEmbeddingByGemini(question);
+
   console.log("Vector store size:", vectorStore.size());
-  
-  // 2. Retrieve relevant chunks
+
+  /* -----------------------------
+     2. Retrieve chunks
+  ------------------------------ */
   const results = vectorStore.search(queryEmbedding, 5);
   console.log("Search results:", results);
 
-  // 3. Build context
-  const context = buildContext(results);
+  /* -----------------------------
+     3. Build context
+  ------------------------------ */
+  const documentContext = buildContext(results);
+  console.log("RAG context:", documentContext);
 
-  console.log("RAG context:", context, question);
+  /* -----------------------------
+     4. Hybrid fallback (safe)
+  ------------------------------ */
+  if (!documentContext) {
+    const fallback = await chatWithLLM([
+      {
+        role: "system",
+        content:
+          "Answer generally. Make it clear you are not using documents."
+      },
+      { role: "user", content: question }
+    ]);
 
-  if (!context) {
     return {
-      answer: "I don't know",
+      answer: fallback.content,
       sources: [],
-      evaluation: {  hallucinated: false, score: 1 }
+      evaluation: {
+        hallucinated: false,
+        score: 0
+      }
     };
   }
 
-const userId = "demo-user";// later, get from auth context
+  /* -----------------------------
+     5. Recall memory (best effort)
+  ------------------------------ */
+  let memoryContext = "";
+  try {
+    memoryContext = await recallMemory(userId, question);
+  } catch {
+    memoryContext = "";
+  }
 
-const memoryContent = await recallMemory(userId, question);
-const combinedContext = `Past conversations:\n${memoryContent} 
-Retrieved documents: ${context}`; 
-  // 4. Build RAG prompt
-  const { system, user } = buildRagPrompt(combinedContext, question);
+  const combinedContext = `
+  Past conversations:
+  ${memoryContext || "None"}
 
-  // 5. Generate answer
-  const response = await chatWithLLM([
-    { role: "system", content: system },
-    { role: "user", content: user }
-  ]);
+  Retrieved documents:
+  ${documentContext}
+  `.trim();
 
-await saveMemory(userId, question);
-await saveMemory(userId, response.content);
+  /* -----------------------------
+     6. Build prompt
+  ------------------------------ */
+  const { system, user } = buildRagPrompt(
+    combinedContext,
+    question
+  );
 
+  /* -----------------------------
+     7. Generate answer (guarded)
+  ------------------------------ */
+  let responseContent = "";
+  try {
+    const response = await chatWithLLM([
+      { role: "system", content: system },
+      { role: "user", content: user }
+    ]);
 
-  // 5a. Evaluate hallucination
-  const evaluation = checkHallucination(response.content, context);
-  // 6. Collect sources
+    validateOutput(response.content);
+    responseContent = response.content;
+  } catch (err) {
+    return {
+      answer:
+        "I'm unable to provide a safe answer to that request.",
+      sources: [],
+      evaluation: {
+        hallucinated: false,
+        score: 1
+      }
+    };
+  }
+
+  /* -----------------------------
+     8. Save memory (non-blocking)
+  ------------------------------ */
+  saveMemory(userId, question).catch(() => { });
+  saveMemory(userId, responseContent).catch(() => { });
+
+  /* -----------------------------
+     9. Evaluate grounding
+  ------------------------------ */
+  const evaluation = checkHallucination(
+    responseContent,
+    documentContext
+  );
+
+  /* -----------------------------
+     10. Sources
+  ------------------------------ */
   const sources = results
     .map(r => r.metadata?.source || r.metadata?.documentId)
     .filter(Boolean);
 
   return {
-    answer: response.content,
+    answer: responseContent,
     sources,
     evaluation
   };

@@ -12,6 +12,7 @@ import ragRouter from "./routes/rag";
 import ragEvalRouter from "./routes/ragEval";
 import agentRouter from "./routes/agent";
 import memoryRouter from "./routes/memory";
+import { aiSecurity } from "./middleware/aiSecurity";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -30,6 +31,10 @@ app.use("/api", ragRouter);
 app.use("/api", ragEvalRouter);
 app.use("/api", agentRouter);
 app.use("/api", memoryRouter);
+
+// Apply ONLY to AI endpoints
+app.use("/api/rag", aiSecurity);
+app.use("/api/agent", aiSecurity);    
 
 
 // 404 fallback
