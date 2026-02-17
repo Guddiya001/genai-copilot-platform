@@ -2,10 +2,11 @@ import { createEmbeddingByGemini } from "../embeddings/embeddingClient";
 import { vectorStore } from "../vectorstore/inMemoryVectorStore";
 import { buildContext } from "./contextBuilder";
 import { buildRagPrompt } from "./ragPrompt";
-import { chatWithLLM } from "../services/llmClient";
+import { chatWithLLM, chatWithLLMCostEffective } from "../services/llmClient";
 import { checkHallucination } from "../eval/hallucinationCheck";
 import { recallMemory, saveMemory } from "../memory/memoryService";
 import { validateOutput } from "../security/outputGuard";
+import { chooseModel } from "../llmops/modelRouter";
 
 
 interface RagAnswer {
@@ -93,10 +94,18 @@ export async function answerWithRag(
   ------------------------------ */
   let responseContent = "";
   try {
-    const response = await chatWithLLM([
-      { role: "system", content: system },
-      { role: "user", content: user }
-    ]);
+    const model = chooseModel("rag");
+
+    const response = await chatWithLLMCostEffective(
+      [
+        { role: "system", content: system },
+        { role: "user", content: user }
+      ],
+      {
+        userId: userId,
+        model: model
+      }
+    );
 
     validateOutput(response.content);
     responseContent = response.content;
