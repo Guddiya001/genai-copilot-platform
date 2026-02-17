@@ -7,18 +7,23 @@ const router = Router();
  * POST /api/rag/answer
  * Body: { question: string }
  */
-router.post("/rag/answer", async (req: Request, res: Response) => {
-  const { question } = req.body;
+router.post("/rag/answer", async (req, res) => {
+  try {
 
-  if (!question || typeof question !== "string") {
-    return res.status(400).json({
-      error: "question is required"
+    const traceId = req.traceId;   // ✅ MUST read from middleware
+
+    const result = await answerWithRag(
+      req.body.question,
+      traceId                    // ✅ MUST pass here
+    );
+
+    res.json(result);
+
+  } catch (err: any) {
+    res.status(500).json({
+      error: err.message
     });
   }
-
-  const result = await answerWithRag(question);
-
-  return res.json(result);
 });
 
 export default router;

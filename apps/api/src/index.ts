@@ -13,6 +13,8 @@ import ragEvalRouter from "./routes/ragEval";
 import agentRouter from "./routes/agent";
 import memoryRouter from "./routes/memory";
 import { aiSecurity } from "./middleware/aiSecurity";
+import { traceMiddleware } from "./observability/traceMiddleware";
+import traceRouter from "./routes/trace";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +22,7 @@ const PORT = process.env.PORT || 4000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(traceMiddleware);
 
 // Routes
 app.use("/", healthRouter);
@@ -31,10 +34,11 @@ app.use("/api", ragRouter);
 app.use("/api", ragEvalRouter);
 app.use("/api", agentRouter);
 app.use("/api", memoryRouter);
+app.use("/api", traceRouter);
 
 // Apply ONLY to AI endpoints
 app.use("/api/rag", aiSecurity);
-app.use("/api/agent", aiSecurity);    
+app.use("/api/agent", aiSecurity);
 
 
 // 404 fallback
